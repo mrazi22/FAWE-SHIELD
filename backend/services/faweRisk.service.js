@@ -59,6 +59,13 @@ function toNumber(value, fallback = 0) {
   return Number.isFinite(numberValue) ? numberValue : fallback;
 }
 
+function normalizeInvoiceNumber(value) {
+  return String(value || "")
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
+}
+
 function formatKES(value) {
   return `KES ${Math.round(toNumber(value)).toLocaleString()}`;
 }
@@ -222,20 +229,27 @@ async function applyDocumentAndErrorRules(events, claim) {
 }
 
 function applyEtimsRules(events, claim) {
-  const invoiceNo = String(claim.invoice_no || "").trim();
+  const rawInvoiceNo = String(claim.invoice_no || "").trim();
   const etimsReceiptNo = String(claim.etims_receipt_no || "").trim();
-  const etimsInvoiceReference = String(
+  const rawEtimsInvoiceReference = String(
     claim.etims_invoice_reference || ""
   ).trim();
+
+  const invoiceNo = normalizeInvoiceNumber(rawInvoiceNo);
+  const etimsInvoiceReference = normalizeInvoiceNumber(rawEtimsInvoiceReference);
 
   // Missing eTIMS is Error, not Fraud. It is handled by DOC003.
   if (!etimsReceiptNo) return;
 
-  if (invoiceNo && etimsInvoiceReference && invoiceNo !== etimsInvoiceReference) {
+  if (
+    invoiceNo &&
+    etimsInvoiceReference &&
+    invoiceNo !== etimsInvoiceReference
+  ) {
     addEvent(
       events,
       "FRAUD005",
-      `Invoice ${invoiceNo} vs eTIMS reference ${etimsInvoiceReference}`
+      `Invoice ${rawInvoiceNo} vs eTIMS reference ${rawEtimsInvoiceReference}`
     );
   }
 
@@ -321,29 +335,41 @@ async function applyFraudRules(connection, events, claim) {
     );
   }
 
-  const invoiceNo = String(claim.invoice_no || "").trim();
+  const rawInvoiceNo = String(claim.invoice_no || "").trim();
+const normalizedInvoiceNo = normalizeInvoiceNumber(rawInvoiceNo);
 
-  if (invoiceNo) {
-    const [invoiceRows] = await connection.query(
-      `
-      SELECT COUNT(*) AS reuse_count
-      FROM fawe_claims
-      WHERE insurer_id = ?
-        AND kenya_provider_id = ?
-        AND invoice_no = ?
-        AND claim_id <> ?
-      `,
-      [claim.insurer_id, claim.kenya_provider_id, invoiceNo, claim.claim_id]
+if (normalizedInvoiceNo) {
+  const [invoiceRows] = await connection.query(
+    `
+    SELECT
+      claim_id,
+      invoice_no
+    FROM fawe_claims
+    WHERE insurer_id = ?
+      AND kenya_provider_id = ?
+      AND claim_id <> ?
+      AND invoice_no IS NOT NULL
+      AND invoice_no <> ''
+    `,
+    [
+      claim.insurer_id,
+      claim.kenya_provider_id,
+      claim.claim_id,
+    ]
+  );
+
+  const reusedInvoice = invoiceRows.find((row) => {
+    return normalizeInvoiceNumber(row.invoice_no) === normalizedInvoiceNo;
+  });
+
+  if (reusedInvoice) {
+    addEvent(
+      events,
+      "FRAUD004",
+      `Invoice ${rawInvoiceNo} matches existing invoice ${reusedInvoice.invoice_no} on claim ${reusedInvoice.claim_id}`
     );
-
-    if (Number(invoiceRows[0].reuse_count || 0) > 0) {
-      addEvent(
-        events,
-        "FRAUD004",
-        `Invoice ${invoiceNo} appears on multiple claims`
-      );
-    }
   }
+}
 }
 
 async function applyAbuseRules(connection, events, claim) {

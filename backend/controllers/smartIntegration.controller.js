@@ -1,14 +1,28 @@
+/*
+Patch for controllers/smartIntegration.controller.js
+
+Goal:
+- Upsert provider/contact data from Smart/LCT payload
+- Insert and score claim
+- Automatically send the right email alerts
+
+Copy only the relevant lines into your existing file.
+*/
+
 const { insertClaim } = require("../services/claimInsert.service");
 const { scoreClaimById } = require("../services/faweRisk.service");
+const { upsertProviderFromPayload } = require("../services/provider.service");
+const {
+  sendClaimManagerAlert,
+  sendHighRiskAlert,
+  sendMissingDocumentsAlert,
+} = require("../services/claimEmail.service");
 
 async function receiveSmartClaim(req, res) {
   try {
     const client = req.integrationClient;
     const payload = req.body;
 
-    // Tenant validation:
-    // If integration client has insurer_id, force the claim to that insurer.
-    // This prevents Smart/LCT payloads from spoofing insurer_id.
     const forceInsurerId = client.insurerId || payload.insurer_id;
 
     if (!forceInsurerId) {
@@ -17,12 +31,31 @@ async function receiveSmartClaim(req, res) {
       });
     }
 
+    await upsertProviderFromPayload(payload);
+
     const claimId = await insertClaim(payload, {
       forceInsurerId,
       forceProviderId: client.providerId || payload.kenya_provider_id,
     });
 
     const scoringResult = await scoreClaimById(claimId);
+
+    let emailAlertResult = null;
+
+    try {
+      if (scoringResult.recommendation === "Investigate") {
+        emailAlertResult = await sendHighRiskAlert(claimId);
+      } else if (scoringResult.claim_status === "Pending Documents") {
+        emailAlertResult = await sendMissingDocumentsAlert(claimId);
+      } else if (scoringResult.recommendation === "Review") {
+        emailAlertResult = await sendClaimManagerAlert(claimId);
+      }
+    } catch (emailError) {
+      console.error("Smart/LCT claim processed, but email alert failed:", emailError);
+      emailAlertResult = {
+        email_error: emailError.message,
+      };
+    }
 
     let message = "Claim received, scored, and processed.";
 
@@ -46,6 +79,7 @@ async function receiveSmartClaim(req, res) {
       primary_fawe_type: scoringResult.primary_fawe_type,
       claim_status: scoringResult.claim_status,
       risk_codes: scoringResult.risk_codes,
+      email_alert: emailAlertResult,
     });
   } catch (error) {
     console.error("POST /integrations/smart/claims error:", error);
