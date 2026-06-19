@@ -2,7 +2,10 @@ const express = require("express");
 const rateLimit = require("express-rate-limit");
 
 const authController = require("../controllers/auth.controller");
-const { authenticate } = require("../middleware/auth.middleware");
+const {
+  authenticate,
+  requireRole,
+} = require("../middleware/auth.middleware");
 
 const router = express.Router();
 
@@ -17,6 +20,12 @@ const loginLimiter = rateLimit({
 });
 
 router.post("/login", loginLimiter, authController.login);
+router.post(
+  "/users",
+  authenticate,
+  requireRole(["system_admin", "insurer_admin"]),
+  authController.createUser
+);
 
 router.get("/me", authenticate, authController.me);
 
