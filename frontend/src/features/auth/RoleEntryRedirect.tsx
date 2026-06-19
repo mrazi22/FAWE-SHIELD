@@ -5,16 +5,16 @@ import type { UserRole } from "../../types/auth.types";
 export function getRoleHomePath(role: UserRole): string {
   switch (role) {
     case "insurer_admin":
-      return "/insurer/dashboard";
+      return "/dashboard";
 
     case "claims_officer":
-      return "/claims/review";
+      return "/dashboard";
 
     case "fraud_investigator":
-      return "/investigations/queue";
+      return "/dashboard";
 
     case "system_admin":
-      return "/insurer/dashboard";
+      return "/dashboard";
 
     case "provider_user":
       return "/provider/documents";
