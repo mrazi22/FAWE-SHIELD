@@ -93,6 +93,9 @@ export type GetClaimsParams = {
   recommendation?: ClaimRecommendation;
   claim_status?: ClaimStatus;
   claim_type?: ClaimType;
+  primary_fawe_type?: FaweType;
+  provider?: string;
+  insurer?: string;
   search?: string;
 };
 
@@ -107,6 +110,21 @@ export type GetClaimsResponse = {
 export type GetClaimByIdResponse = {
   claim: Claim;
   risk_codes: ClaimRiskCode[];
+};
+
+export type ProviderFilterOption = {
+  id: string;
+  name: string;
+};
+
+export type InsurerFilterOption = {
+  id: string;
+  name: string;
+};
+
+export type ClaimFilterOptionsResponse = {
+  providers: ProviderFilterOption[];
+  insurers: InsurerFilterOption[];
 };
 
 export type CreateClaimPayload = {

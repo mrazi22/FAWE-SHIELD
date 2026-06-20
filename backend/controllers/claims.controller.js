@@ -104,6 +104,23 @@ async function getClaims(req, res) {
       params.push(req.query.claim_type);
     }
 
+    if (req.query.primary_fawe_type) {
+      filters.push("primary_fawe_type = ?");
+      params.push(req.query.primary_fawe_type);
+    }
+
+    if (req.query.provider) {
+      filters.push("(kenya_provider_id LIKE ? OR provider_name LIKE ?)");
+      const providerValue = `%${req.query.provider}%`;
+      params.push(providerValue, providerValue);
+    }
+
+    if (req.query.insurer) {
+      filters.push("(insurer_id LIKE ? OR insurer_name LIKE ?)");
+      const insurerValue = `%${req.query.insurer}%`;
+      params.push(insurerValue, insurerValue);
+    }
+
     if (req.query.search) {
       filters.push(
         `(claim_id LIKE ? OR member_id LIKE ? OR provider_name LIKE ? OR diagnosis LIKE ?)`
@@ -183,6 +200,58 @@ async function getClaims(req, res) {
 
     return res.status(500).json({
       message: "Failed to fetch claims.",
+    });
+  }
+}
+async function getClaimFilterOptions(req, res) {
+  try {
+    const access = getClaimAccessWhere(req.user);
+
+    const [providerRows] = await pool.query(
+      `
+      SELECT DISTINCT
+        kenya_provider_id,
+        provider_name
+      FROM fawe_claims
+      WHERE ${access.whereSql}
+        AND kenya_provider_id IS NOT NULL
+        AND kenya_provider_id <> ''
+      ORDER BY provider_name ASC
+      LIMIT 500
+      `,
+      access.params
+    );
+
+    const [insurerRows] = await pool.query(
+      `
+      SELECT DISTINCT
+        insurer_id,
+        insurer_name
+      FROM fawe_claims
+      WHERE ${access.whereSql}
+        AND insurer_id IS NOT NULL
+        AND insurer_id <> ''
+      ORDER BY insurer_name ASC
+      LIMIT 200
+      `,
+      access.params
+    );
+
+    return res.json({
+      providers: providerRows.map((provider) => ({
+        id: provider.kenya_provider_id,
+        name: provider.provider_name,
+      })),
+      insurers: insurerRows.map((insurer) => ({
+        id: insurer.insurer_id,
+        name: insurer.insurer_name,
+      })),
+    });
+  } catch (error) {
+    console.error("GET /claims/filter-options error:", error);
+
+    return res.status(500).json({
+      message: "Failed to fetch claim filter options.",
     });
   }
 }
@@ -535,6 +604,7 @@ async function scoreClaim(req, res) {
 module.exports = {
   getClaims,
   getClaimById,
+  getClaimFilterOptions,
   createClaim,
   updateClaimStatus,
   scoreClaim,

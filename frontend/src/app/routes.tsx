@@ -18,6 +18,10 @@ const ClaimsReviewPage = lazy(
   () => import("../pages/claims/ClaimsReviewPage")
 );
 
+const ClaimDetailPage = lazy(
+  () => import("../pages/claims/ClaimDetailPage")
+);
+
 const InvestigationQueuePage = lazy(
   () => import("../pages/investigations/InvestigationQueuePage")
 );
@@ -71,6 +75,25 @@ export const router = createBrowserRouter([
           <ProtectedRoute allowedRoles={["insurer_admin", "claims_officer"]}>
             <LazyPage>
               <ClaimsReviewPage />
+            </LazyPage>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "claims/:claimId",
+        element: (
+          <ProtectedRoute
+            allowedRoles={[
+              "system_admin",
+              "insurer_admin",
+              "claims_officer",
+              "fraud_investigator",
+              "provider_user",
+              "member",
+            ]}
+          >
+            <LazyPage>
+              <ClaimDetailPage />
             </LazyPage>
           </ProtectedRoute>
         ),

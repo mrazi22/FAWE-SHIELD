@@ -23,6 +23,19 @@ router.get(
 );
 
 router.get(
+  "/filter-options",
+  authenticate,
+  requireRole([
+    "system_admin",
+    "insurer_admin",
+    "claims_officer",
+    "fraud_investigator",
+    "provider_user",
+  ]),
+  claimsController.getClaimFilterOptions
+);
+
+router.get(
   "/:claimId",
   authenticate,
   requireRole([

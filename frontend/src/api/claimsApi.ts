@@ -8,6 +8,7 @@ import type {
   UpdateClaimStatusPayload,
   UpdateClaimStatusResponse,
   ScoringResult,
+  ClaimFilterOptionsResponse,
 } from "../types/claims.types";
 
 export async function getClaims(
@@ -36,6 +37,14 @@ export async function createClaim(
   const response = await axiosClient.post<CreateClaimResponse>(
     "/claims",
     payload
+  );
+
+  return response.data;
+}
+
+export async function getClaimFilterOptions(): Promise<ClaimFilterOptionsResponse> {
+  const response = await axiosClient.get<ClaimFilterOptionsResponse>(
+    "/claims/filter-options"
   );
 
   return response.data;

@@ -6,6 +6,7 @@ import type {
   EmailAlertResponse,
   SendLossRatioPayload,
   SendLossRatioResponse,
+  ClaimCommunicationStatusResponse,
 } from "../types/communications.types";
 
 export async function testEmail(
@@ -42,6 +43,16 @@ export async function sendHighRiskAlert(
 ): Promise<EmailAlertResponse> {
   const response = await axiosClient.post<EmailAlertResponse>(
     `/communications/claims/${claimId}/high-risk-alert`
+  );
+
+  return response.data;
+}
+
+export async function getClaimCommunicationStatus(
+  claimId: string
+): Promise<ClaimCommunicationStatusResponse> {
+  const response = await axiosClient.get<ClaimCommunicationStatusResponse>(
+    `/communications/claims/${claimId}/status`
   );
 
   return response.data;

@@ -33,6 +33,12 @@ router.get(
   requireRole(communicationRoles),
   communicationController.verifyEmail
 );
+router.get(
+  "/claims/:claimId/status",
+  authenticate,
+  requireRole(communicationRoles),
+  communicationController.getClaimCommunicationStatus
+);
 
 router.post(
   "/claims/:claimId/manager-alert",

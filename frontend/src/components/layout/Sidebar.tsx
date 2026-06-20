@@ -16,12 +16,12 @@ const navItems: NavItem[] = [
     icon: "📊",
     roles: ["system_admin", "insurer_admin", "claims_officer", "fraud_investigator"],
   },
-  {
-    label: "Claims Review",
-    path: "/claims/review",
-    icon: "🧾",
-    roles: ["insurer_admin", "claims_officer"],
-  },
+{
+  label: "Claims Queue",
+  path: "/claims/review",
+  icon: "🧾",
+  roles: ["insurer_admin", "claims_officer"],
+},
   {
     label: "Investigations",
     path: "/investigations/queue",

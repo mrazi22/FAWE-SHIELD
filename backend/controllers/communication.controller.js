@@ -15,6 +15,11 @@ const {
   sendLossRatioReport,
 } = require("../services/reportEmail.service");
 
+const {
+  logEmailResult,
+  getClaimCommunicationLogs,
+} = require("../services/communicationLog.service");
+
 function getUserId(req) {
   return req.user?.id || req.user?.userId || null;
 }
@@ -82,6 +87,22 @@ async function sendManagerAlert(req, res) {
       sentByUserId: getUserId(req),
     });
 
+    await logEmailResult({
+  claimId: req.params.claimId,
+  messageType: "high_risk_alert",
+  subject: "FAWE Shield High Risk Claim Alert",
+  result,
+  sentByUserId: getUserId(req),
+});
+
+    await logEmailResult({
+  claimId: req.params.claimId,
+  messageType: "manager_alert",
+  subject: "FAWE Shield Claim Manager Alert",
+  result,
+  sentByUserId: getUserId(req),
+});
+
     return res.json({
       message: "Claim manager alert processed.",
       result,
@@ -123,6 +144,14 @@ async function sendMissingDocuments(req, res) {
     const result = await sendMissingDocumentsAlert(req.params.claimId, {
       sentByUserId: getUserId(req),
     });
+    await logEmailResult({
+  claimId: req.params.claimId,
+  messageType: "missing_documents_alert",
+  subject: "FAWE Shield Missing Documents Alert",
+  result,
+  sentByUserId: getUserId(req),
+});
+    
 
     return res.json({
       message: "Missing-document email alert processed.",
@@ -144,6 +173,13 @@ async function sendMemberConfirmation(req, res) {
     const result = await sendMemberClaimConfirmation(req.params.claimId, {
       sentByUserId: getUserId(req),
     });
+    await logEmailResult({
+  claimId: req.params.claimId,
+  messageType: "member_confirmation",
+  subject: "FAWE Shield Member Claim Confirmation",
+  result,
+  sentByUserId: getUserId(req),
+});
 
     return res.json({
       message: "Member confirmation email processed.",
@@ -156,6 +192,41 @@ async function sendMemberConfirmation(req, res) {
       message: error.message || "Failed to send member confirmation email.",
       code: error.code,
       sqlMessage: error.sqlMessage,
+    });
+  }
+}
+
+async function getClaimCommunicationStatus(req, res) {
+  try {
+    const { claimId } = req.params;
+
+    const logs = await getClaimCommunicationLogs(claimId);
+
+    const summary = {
+      total: logs.length,
+      sent: logs.filter((log) => log.status === "sent").length,
+      failed: logs.filter((log) => log.status === "failed").length,
+      manager_alerts: logs.filter(
+        (log) => log.message_type === "manager_alert"
+      ).length,
+      missing_documents_alerts: logs.filter(
+        (log) => log.message_type === "missing_documents_alert"
+      ).length,
+      member_confirmations: logs.filter(
+        (log) => log.message_type === "member_confirmation"
+      ).length,
+    };
+
+    return res.json({
+      claim_id: claimId,
+      summary,
+      logs,
+    });
+  } catch (error) {
+    console.error("getClaimCommunicationStatus error:", error);
+
+    return res.status(500).json({
+      message: "Failed to fetch claim communication status.",
     });
   }
 }
@@ -236,4 +307,5 @@ module.exports = {
   sendMemberConfirmation,
   confirmClaimVisit,
   sendLossRatio,
+  getClaimCommunicationStatus,
 };
