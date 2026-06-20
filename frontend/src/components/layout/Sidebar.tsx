@@ -28,12 +28,34 @@ const navItems: NavItem[] = [
     icon: "🕵️",
     roles: ["insurer_admin", "fraud_investigator"],
   },
-  {
-    label: "Communications",
-    path: "/communications",
-    icon: "✉️",
-    roles: ["system_admin", "insurer_admin", "claims_officer", "fraud_investigator"],
-  },
+   {
+  label: "Provider Risk",
+  path: "/providers/risk",
+  icon: "🏥",
+  roles: ["system_admin", "insurer_admin", "fraud_investigator"],
+},
+{
+  label: "FAWE Breakdown",
+  path: "/fawe/breakdown",
+  icon: "🧠",
+  roles: [
+    "system_admin",
+    "insurer_admin",
+    "claims_officer",
+    "fraud_investigator",
+  ],
+},
+{
+  label: "Reports",
+  path: "/reports/loss-ratio",
+  icon: "📈",
+  roles: [
+    "system_admin",
+    "insurer_admin",
+    "claims_officer",
+    "fraud_investigator",
+  ],
+},
   {
     label: "Users",
     path: "/users",

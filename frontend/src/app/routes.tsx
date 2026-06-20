@@ -25,6 +25,16 @@ const ClaimDetailPage = lazy(
 const InvestigationQueuePage = lazy(
   () => import("../pages/investigations/InvestigationQueuePage")
 );
+const ProviderRiskDashboardPage = lazy(
+  () => import("../pages/providers/ProviderRiskDashboardPage")
+);
+
+const FaweBreakdownPage = lazy(
+  () => import("../pages/fawe/FaweBreakdownPage")
+);
+const LossRatioReportPage = lazy(
+  () => import("../pages/reports/LossRatioReportPage")
+);
 
 function LazyPage({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<DashboardSkeleton />}>{children}</Suspense>;
@@ -98,6 +108,56 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      {
+  path: "providers/risk",
+  element: (
+    <ProtectedRoute
+      allowedRoles={[
+        "system_admin",
+        "insurer_admin",
+        "fraud_investigator",
+      ]}
+    >
+      <LazyPage>
+        <ProviderRiskDashboardPage />
+      </LazyPage>
+    </ProtectedRoute>
+  ),
+},
+{
+  path: "fawe/breakdown",
+  element: (
+    <ProtectedRoute
+      allowedRoles={[
+        "system_admin",
+        "insurer_admin",
+        "claims_officer",
+        "fraud_investigator",
+      ]}
+    >
+      <LazyPage>
+        <FaweBreakdownPage />
+      </LazyPage>
+    </ProtectedRoute>
+  ),
+},
+{
+  path: "reports/loss-ratio",
+  element: (
+    <ProtectedRoute
+      allowedRoles={[
+        "system_admin",
+        "insurer_admin",
+        "claims_officer",
+        "fraud_investigator",
+      ]}
+    >
+      <LazyPage>
+        <LossRatioReportPage />
+      </LazyPage>
+    </ProtectedRoute>
+  ),
+},
       {
         path: "investigations/queue",
         element: (

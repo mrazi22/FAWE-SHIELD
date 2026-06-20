@@ -23,17 +23,28 @@ const mobileNavItems: MobileNavItem[] = [
     roles: ["insurer_admin", "claims_officer"],
   },
   {
-    label: "Risk",
-    path: "/investigations/queue",
-    icon: "🚨",
-    roles: ["insurer_admin", "fraud_investigator"],
+    label: "Providers",
+    path: "/providers/risk",
+    icon: "🏥",
+    roles: ["system_admin", "insurer_admin", "fraud_investigator"],
   },
   {
-    label: "Users",
-    path: "/users",
-    icon: "👥",
-    roles: ["system_admin", "insurer_admin"],
+    label: "FAWE",
+    path: "/fawe/breakdown",
+    icon: "🧠",
+    roles: ["system_admin", "insurer_admin", "claims_officer", "fraud_investigator"],
   },
+  {
+  label: "Reports",
+  path: "/reports/loss-ratio",
+  icon: "📈",
+  roles: [
+    "system_admin",
+    "insurer_admin",
+    "claims_officer",
+    "fraud_investigator",
+  ],
+},
 ];
 
 export default function MobileBottomNav() {

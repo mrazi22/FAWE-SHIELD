@@ -34,6 +34,17 @@ router.get(
   ]),
   dashboardController.getFaweBreakdown
 );
+router.get(
+  "/loss-ratio-page",
+  authenticate,
+  requireRole([
+    "system_admin",
+    "insurer_admin",
+    "claims_officer",
+    "fraud_investigator",
+  ]),
+  dashboardController.getLossRatioReportPage
+);
 
 router.get(
   "/provider-risk",
@@ -59,6 +70,30 @@ router.get(
     "provider_user",
   ]),
   dashboardController.getLossRatio
+);
+
+router.get(
+  "/provider-risk-dashboard",
+  authenticate,
+  requireRole([
+    "system_admin",
+    "insurer_admin",
+    "claims_officer",
+    "fraud_investigator",
+  ]),
+  dashboardController.getProviderRiskDashboard
+);
+
+router.get(
+  "/fawe-breakdown-page",
+  authenticate,
+  requireRole([
+    "system_admin",
+    "insurer_admin",
+    "claims_officer",
+    "fraud_investigator",
+  ]),
+  dashboardController.getFaweBreakdownPage
 );
 
 module.exports = router;
