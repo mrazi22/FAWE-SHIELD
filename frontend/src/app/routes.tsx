@@ -35,6 +35,9 @@ const FaweBreakdownPage = lazy(
 const LossRatioReportPage = lazy(
   () => import("../pages/reports/LossRatioReportPage")
 );
+const SmartLctSimulatorPage = lazy(
+  () => import("../pages/integrations/SmartLctSimulatorPage")
+);
 
 function LazyPage({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<DashboardSkeleton />}>{children}</Suspense>;
@@ -108,6 +111,24 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+
+      {
+  path: "integrations/smart-simulator",
+  element: (
+    <ProtectedRoute
+      allowedRoles={[
+        "system_admin",
+        "insurer_admin",
+        "claims_officer",
+        "fraud_investigator",
+      ]}
+    >
+      <LazyPage>
+        <SmartLctSimulatorPage />
+      </LazyPage>
+    </ProtectedRoute>
+  ),
+},
       {
   path: "providers/risk",
   element: (

@@ -13,8 +13,18 @@ const communicationRoutes = require("./routes/communication.routes");
 const app = express();
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "https://yourdomain.com"
+  ],
   credentials: true,
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "x-api-key",
+    "x-fawe-api-key"
+  ],
 }));
 
 app.use(express.json({ limit: "50mb" }));

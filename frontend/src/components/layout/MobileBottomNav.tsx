@@ -35,6 +35,17 @@ const mobileNavItems: MobileNavItem[] = [
     roles: ["system_admin", "insurer_admin", "claims_officer", "fraud_investigator"],
   },
   {
+  label: "Smart/LCT Demo",
+  path: "/integrations/smart-simulator",
+  icon: "🔌",
+  roles: [
+    "system_admin",
+    "insurer_admin",
+    "claims_officer",
+    "fraud_investigator",
+  ],
+},
+  {
   label: "Reports",
   path: "/reports/loss-ratio",
   icon: "📈",
